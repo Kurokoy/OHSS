@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OHSS 高蛋白饮食智能计算器 — 公有云部署费用申请</title>
+<style>
+    :root {
+        --primary: #1a3a5c; --primary-light: #2B5797; --accent: #4472C4;
+        --bg: #f8f9fa; --card-bg: #ffffff; --text: #212121;
+        --text-secondary: #555; --border: #dde1e6; --success: #2E7D32;
+        --warning: #E65100; --table-stripe: #f0f4f8;
+        --shadow: 0 2px 12px rgba(0,0,0,0.06); --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        background: #e8ecf1; color: var(--text); line-height: 1.8; font-size: 15px;
+        -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 900px; margin: 0 auto; background: #fff; box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+
+    /* COVER */
+    .cover {
+        background: linear-gradient(160deg, #0f2440 0%, #1a3a5c 30%, #1e4976 60%, #1a3a5c 100%);
+        color: #fff; padding: 80px 60px 70px; text-align: center; position: relative; overflow: hidden;
+    }
+    .cover::before { content: ''; position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border: 2px solid rgba(255,255,255,0.06); border-radius: 50%; }
+    .cover::after { content: ''; position: absolute; bottom: -40px; left: -40px; width: 200px; height: 200px; border: 2px solid rgba(255,255,255,0.05); border-radius: 50%; }
+    .cover .badge { display: inline-block; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); padding: 6px 20px; border-radius: 20px; font-size: 13px; letter-spacing: 2px; margin-bottom: 28px; position: relative; z-index: 1; }
+    .cover h1 { font-size: 36px; font-weight: 700; letter-spacing: 2px; margin-bottom: 12px; position: relative; z-index: 1; }
+    .cover .subtitle { font-size: 18px; color: rgba(255,255,255,0.75); margin-bottom: 30px; position: relative; z-index: 1; }
+    .cover .divider { width: 60px; height: 3px; background: rgba(255,255,255,0.3); margin: 0 auto 30px; position: relative; z-index: 1; }
+    .cover .meta { font-size: 14px; color: rgba(255,255,255,0.55); position: relative; z-index: 1; }
+    .cover .meta span { margin: 0 14px; }
+
+    /* SECTIONS */
+    .section { padding: 50px 60px; border-bottom: 1px solid var(--border); }
+    .section:last-child { border-bottom: none; }
+    .section-title { font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+    .section-title .num { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: var(--primary); color: #fff; border-radius: 50%; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+
+    /* INTRO */
+    .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .intro-card { background: var(--bg); border-radius: var(--radius); padding: 24px; border-left: 4px solid var(--accent); }
+    .intro-card h4 { font-size: 15px; color: var(--primary); margin-bottom: 8px; }
+    .intro-card p { color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+
+    /* FEATURES */
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .feature-card { text-align: center; padding: 24px 14px; background: var(--bg); border-radius: var(--radius); transition: transform 0.2s; }
+    .feature-card .icon { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-light), var(--accent)); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; font-weight: 700; }
+    .feature-card h4 { font-size: 13px; color: var(--primary); margin-bottom: 4px; font-weight: 600; }
+    .feature-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* SCREENSHOTS */
+    .screenshot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .screenshot-card { background: var(--bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+    .screenshot-card img { width: 100%; display: block; }
+    .screenshot-card .caption { padding: 10px 14px; font-size: 13px; color: var(--text-secondary); text-align: center; background: #fff; }
+    .screenshot-placeholder { background: linear-gradient(135deg, #e8ecf1, #dde1e6); aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; color: #999; font-size: 14px; text-align: center; padding: 20px; }
+
+    /* ARCHITECTURE */
+    .arch-diagram { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 30px 0; flex-wrap: wrap; }
+    .arch-node { background: #fff; border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 28px; text-align: center; min-width: 100px; }
+    .arch-node.client { border-color: var(--accent); background: #f0f5ff; }
+    .arch-node.cloud { border-color: var(--primary); background: #f0f4f8; }
+    .arch-node h4 { font-size: 14px; color: var(--primary); margin-bottom: 4px; }
+    .arch-node p { font-size: 12px; color: var(--text-secondary); }
+    .arch-arrow { font-size: 24px; color: var(--accent); font-weight: 700; }
+
+    /* COST TABLE */
+    .cost-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .cost-table thead th { background: var(--primary); color: #fff; padding: 14px 16px; text-align: center; font-weight: 600; font-size: 14px; }
+    .cost-table thead th:first-child { border-radius: 8px 0 0 0; }
+    .cost-table thead th:last-child { border-radius: 0 8px 0 0; }
+    .cost-table tbody td { padding: 14px 16px; text-align: center; border-bottom: 1px solid var(--border); }
+    .cost-table tbody tr:nth-child(even) { background: var(--table-stripe); }
+    .cost-table .item-name { text-align: left; font-weight: 600; color: var(--primary); }
+    .cost-table .item-desc { font-size: 12px; color: var(--text-secondary); font-weight: 400; }
+    .cost-table .cost-highlight { color: var(--warning); font-weight: 700; font-size: 16px; }
+    .cost-table tfoot td { background: #f0f4f8; font-weight: 700; font-size: 16px; padding: 16px; border-top: 2px solid var(--primary); }
+    .cost-table tfoot .total-amount { color: #C62828; font-size: 22px; }
+    .cost-note { margin-top: 12px; font-size: 12px; color: #999; padding: 0 8px; }
+
+    /* REASONING */
+    .reason-list { list-style: none; padding: 0; }
+    .reason-list li { padding: 14px 0 14px 32px; position: relative; border-bottom: 1px dashed var(--border); font-size: 14px; }
+    .reason-list li::before { content: ''; position: absolute; left: 0; top: 20px; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; }
+    .reason-list li:last-child { border-bottom: none; }
+    .reason-list li strong { color: var(--primary); }
+
+    /* NEW FEATURE BADGE */
+    .new-badge { display: inline-block; background: #E8F5E9; color: #2E7D32; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 4px; }
+
+    /* PRINT */
+    @media print {
+        body { background: #fff; }
+        .page { max-width: 100%; box-shadow: none; margin: 0; }
+        .section { padding: 30px 40px; page-break-inside: avoid; }
+        .cover { padding: 50px 40px; -webkit-print-color-adjust: exact; }
+        .cover h1 { font-size: 28px; }
+        .cost-table thead th { background: var(--primary) !important; -webkit-print-color-adjust: exact; }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .cover { padding: 50px 30px; }
+        .cover h1 { font-size: 24px; }
+        .section { padding: 30px 24px; }
+        .intro-grid { grid-template-columns: 1fr; }
+        .feature-grid { grid-template-columns: repeat(2, 1fr); }
+        .screenshot-grid { grid-template-columns: 1fr; }
+        .arch-diagram { flex-direction: column; }
+        .arch-arrow { display: none; }
+        .cost-table { font-size: 12px; }
+        .cost-table thead th, .cost-table tbody td { padding: 10px 8px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- ====== COVER ====== -->
+    <div class="cover">
+        <div class="badge">费 用 申 请</div>
+        <h1>OHSS 高蛋白饮食智能计算器</h1>
+        <p class="subtitle">公有云部署方案及费用申请</p>
+        <div class="divider"></div>
+        <p class="meta">
+            <span>生殖医学中心</span>
+            <span>2026 年 8 月</span>
+        </p>
+    </div>
+
+    <!-- ====== 一、系统简介 ====== -->
+    <div class="section">
+        <div class="section-title"><span class="num">1</span> 系统简介</div>
+        <div class="intro-grid">
+            <div class="intro-card">
+                <h4>📋 项目背景</h4>
+                <p>OHSS（卵巢过度刺激综合征）是辅助生殖技术中常见的并发症，发生率约 3%-8%。高蛋白饮食是轻中度 OHSS 患者的基础干预措施。门诊护士需要根据患者身高、体重、风险分层，快速生成个性化高蛋白饮食食谱。</p>
+            </div>
+            <div class="intro-card">
+                <h4>🎯 系统定位</h4>
+                <p>面向生殖医学中心门诊护士的护理宣教辅助工具，替代手工计算和口头宣教，实现标准化、可视化的饮食指导，提升护理质量与患者满意度。</p>
+            </div>
+            <div class="intro-card">
+                <h4>📦 当前状态</h4>
+                <p>系统已完成开发并内部试用，包含 42 种食物数据库、OHSS 风险评分算法、五餐食谱生成、PDF 报告、二维码分享、护士账号认证、患者数据持久化等完整功能，具备上线条件。</p>
+            </div>
+            <div class="intro-card">
+                <h4>🔒 安全合规</h4>
+                <p>系统仅处理身高、体重、风险评分等基础营养评估信息，不涉及身份证号、电话号码等个人隐私数据。内置护士账号认证体系，防止未授权访问。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 二、系统界面展示 ====== -->
+    <div class="section">
+        <div class="section-title"><span class="num">2</span> 系统界面展示</div>
+        <div class="screenshot-grid">
+            <div class="screenshot-card">
+                <img src="screenshots/01-login.png" alt="登录页面" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="screenshot-placeholder" style="display:none;">📸<br>登录页面</div>
+                <div class="caption">护士登录页面 — 账号认证保护</div>
+            </div>
+            <div class="screenshot-card">
+                <img src="screenshots/02-main-form.png" alt="患者信息录入" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="screenshot-placeholder" style="display:none;">📸<br>患者信息录入</div>
+                <div class="caption">患者信息录入 — 42 种食物库 + 风险评估</div>
+            </div>
+            <div class="screenshot-card">
+                <img src="screenshots/03-results-meals.png" alt="计算结果与食谱" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="screenshot-placeholder" style="display:none;">📸<br>计算结果与食谱</div>
+                <div class="caption">计算结果 + 五餐食谱 + 在线二维码</div>
+            </div>
+            <div class="screenshot-card">
+                <img src="screenshots/05-patient-list.png" alt="患者记录" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="screenshot-placeholder" style="display:none;">📸<br>患者记录列表</div>
+                <div class="caption">患者记录查询 — 搜索 + 历史记录</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 三、核心功能 ====== -->
+    <div class="section">
+        <div class="section-title"><span class="num">3</span> 核心功能清单</div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">1</div>
+                <h4>患者信息录入</h4>
+                <p>身高、体重、腰围、小腿围、OHSS 风险指标一键录入</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">2</div>
+                <h4>自动计算评估</h4>
+                <p>BMI、计算体重、风险分层、蛋白需求、液体参考</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">3</div>
+                <h4>五餐食谱生成</h4>
+                <p>早餐/早加餐/午餐/午加餐/晚餐个性化食谱，42 种食物库</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">4</div>
+                <h4>PDF 报告导出</h4>
+                <p>含患者信息、风险评估、食谱明细、安全提示</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">5</div>
+                <h4>二维码分享 <span class="new-badge">v2.0</span></h4>
+                <p>在线显示二维码，患者手机扫码查看，数据精简可扫描</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">6</div>
+                <h4>护士账号认证 <span class="new-badge">v2.0</span></h4>
+                <p>用户名+密码登录，防止未授权访问，保护患者数据</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">7</div>
+                <h4>患者数据持久化 <span class="new-badge">v2.0</span></h4>
+                <p>SQLite 数据库存储，支持按姓名搜索、查看历史记录</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">8</div>
+                <h4>移动端适配</h4>
+                <p>适配微信浏览器、手机浏览器，最大宽度 480px</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">9</div>
+                <h4>安全提示</h4>
+                <p>内置风险预警、治疗级转诊提醒、液体参考安全说明</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== 四、云部署方案 ====== -->
+    <div class="section">
+        <div class="section-title"><span class="num">4</span> 公有云部署方案</div>
+        <p style="margin-bottom:20px;color:var(--text-secondary);">
+            采用国内主流公有云平台（阿里云 / 腾讯云 / 华为云均可），部署架构如下：
+        </p>
+        <div class="arch-diagram">
+            <div class="arch-node client">
+                <h4>🖥 门诊电脑</h4>
+                <p>护士浏览器登录</p>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node cloud">
+                <h4>☁️ 云服务器</h4>
+                <p>2核 4G · 40GB SSD<br>3Mbps 带宽<br>Flask + SQLite</p>
+            </div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node client">
+                <h4>📱 患者手机</h4>
+                <p>扫码查看报告</p>
+            </div>
+        </div>
+        <table class="cost-table" style="margin-top: 20px;">
+            <thead>
+                <tr>
+                    <th style="width:18%;">配置项</th>
+                    <th style="width:30%;">推荐规格</th>
+                    <th style="width:32%;">说明</th>
+                    <th style="width:20%;">备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:center;font-weight:600;">CPU / 内存</td>
+                    <td>2 核 vCPU · 4 GB</td>
+                    <td>Flask + SQLite，单进程轻量并发，2核4G 完全满足 20-50 次/日使用</td>
+                    <td style="color:var(--success);">够用</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;font-weight:600;">系统盘</td>
+                    <td>40 GB SSD</td>
+                    <td>操作系统 + Python + 应用 + SQLite 数据库，约占用 15 GB</td>
+                    <td style="color:var(--success);">充裕</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;font-weight:600;">带宽</td>
+                    <td>3 Mbps</td>
+                    <td>页面约 200KB，3Mbps 可支持 5-8 人同时流畅访问</td>
+                    <td style="color:var(--success);">满足</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;font-weight:600;">操作系统</td>
+                    <td>Ubuntu 22.04 / CentOS 7.9</td>
+                    <td>免费 Linux 发行版，稳定可靠，Python 3 原生支持</td>
+                    <td style="color:var(--success);">免费</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center;font-weight:600;">数据库</td>
+                    <td>SQLite（内置）</td>
+                    <td>轻量级文件数据库，零配置，无需额外费用。数据存储在服务器本地</td>
+                    <td style="color:var(--success);">免费</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ====== 五、费用明细 ====== -->
+    <div class="section">
+        <div class="section-title"><span class="num">5</span> 费用明细</div>
+        <p style="margin-bottom:16px;color:var(--text-secondary);">
+            以下为小规模试点（1-2 个科室）的预估年费，以阿里云为例，腾讯云/华为云价格相近：
+        </p>
+        <table class="cost-table">
+            <thead>
+                <tr>
+                    <th>费用项目</th>
+                    <th>配置规格</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                    <th>年费（元）</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="item-name">
+                        云服务器 ECS
+                        <div class="item-desc">含 3Mbps 带宽</div>
+                    </td>
+                    <td>2核 4G · 40GB SSD · 3Mbps</td>
+                    <td class="cost-highlight">≈1,500 元/年</td>
+                    <td>1 台</td>
+                    <td class="cost-highlight">1,500</td>
+                </tr>
+                <tr>
+                    <td class="item-name">
+                        域名注册
+                        <div class="item-desc">.com / .cn / .com.cn</div>
+                    </td>
+                    <td>首年注册 + 续费</td>
+                    <td class="cost-highlight">≈80 元/年</td>
+                    <td>1 个</td>
+                    <td class="cost-highlight">80</td>
+                </tr>
+                <tr>
+                    <td class="item-name">
+                        SSL 证书
+                        <div class="item-desc">HTTPS 加密访问</div>
+                    </td>
+                    <td>DV 域名型 · 免费证书</td>
+                    <td style="color:var(--success);">0 元/年</td>
+                    <td>1 个</td>
+                    <td style="color:var(--success);">0</td>
+                </tr>
+                <tr>
+                    <td class="item-name">
+                        数据库
+                        <div class="item-desc">SQLite 文件数据库</div>
+                    </td>
+                    <td>内置，无需额外购买</td>
+                    <td style="color:var(--success);">0 元/年</td>
+                    <td>—</td>
+                    <td style="color:var(--success);">0</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">合 计</td>
+                    <td class="total-amount">1,580 元/年</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="cost-note">
+            * 费用说明：<br>
+            ① 云服务器新用户首年通常有较大折扣，实际费用可能更低（约 800-1,200 元/年）；<br>
+            ② 域名首年注册费约 30-60 元，续费约 60-80 元/年；<br>
+            ③ 3Mbps 带宽已包含在 ECS 套餐内，无需额外付费；<br>
+            ④ SQLite 为轻量级文件数据库，无需额外购买云数据库服务，零成本；<br>
+            ⑤ 后续如需升级配置（更多科室使用），可按需弹性扩容，费用按比例增加；<br>
+            ⑥ 以上为参考价，实际以采购时云厂商官网报价为准。
+        </div>
+    </div>
+
+    <!-- ====== 六、申请理由 ====== -->
+    <div class="section">
+        <div class="section-title"><span class="num">6</span> 申请理由与预期效果</div>
+        <ul class="reason-list">
+            <li>
+                <strong>当前痛点：</strong>系统目前仅能单机运行，无法在多个诊室间共享，数据无法统一管理，每次使用需由开发人员手动启动，不便于护士独立操作。
+            </li>
+            <li>
+                <strong>多终端访问：</strong>部署到公有云后，所有门诊电脑均可通过浏览器（域名访问）使用，无需安装任何软件，即开即用。
+            </li>
+            <li>
+                <strong>护士账号认证：</strong>内置登录系统，只有授权护士才能使用，防止未授权人员访问患者数据，满足基本安全合规要求。
+            </li>
+            <li>
+                <strong>患者数据持久化：</strong>所有患者计算记录自动保存到数据库，护士可随时按姓名搜索历史记录，查看既往评估结果，便于随访对比。
+            </li>
+            <li>
+                <strong>患者自助查看：</strong>生成的报告可通过二维码分享，患者手机扫码即可查看饮食指导，无需护士打印分发。
+            </li>
+            <li>
+                <strong>7×24 小时可用：</strong>云服务器持续运行，护士随时可用，不受单机开关机限制。云厂商提供 99.95% 以上 SLA 可用性保障。
+            </li>
+            <li>
+                <strong>数据安全：</strong>云服务器提供定期快照备份、安全组防火墙、DDoS 基础防护，数据安全性优于科室自管电脑。
+            </li>
+            <li>
+                <strong>成本极低：</strong>年费约 <strong>1,580 元</strong>，折合每月仅约 132 元，远低于采购一台专用电脑（约 5,000-8,000 元），且无需承担电费、网络、维护人力成本。
+            </li>
+            <li>
+                <strong>弹性扩展：</strong>试点成功后如需在多科室推广，可通过升级配置（4核8G ≈ 3,000 元/年）或增加负载均衡来实现，架构平滑扩展，前期投入不浪费。
+            </li>
+        </ul>
+    </div>
+
+    <!-- ====== 七、技术架构 ====== -->
+    <div class="section" style="border-bottom: none;">
+        <div class="section-title"><span class="num">7</span> 技术架构一览</div>
+        <table class="cost-table">
+            <thead>
+                <tr>
+                    <th>层级</th>
+                    <th>技术选型</th>
+                    <th>说明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight:600;">前端</td>
+                    <td>原生 HTML5 + CSS3 + JavaScript</td>
+                    <td>无框架依赖，移动端优先，适配微信浏览器</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">后端</td>
+                    <td>Python 3 + Flask 3.x</td>
+                    <td>轻量级 Web 框架，单文件部署，易于维护</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">数据库</td>
+                    <td>SQLite 3</td>
+                    <td>文件数据库，零配置，免维护，免费</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">认证</td>
+                    <td>Flask Session + SHA-256</td>
+                    <td>服务端会话管理，密码哈希存储</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">PDF 生成</td>
+                    <td>ReportLab 4.x</td>
+                    <td>支持中文排版，A4 标准格式</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">二维码</td>
+                    <td>qrcode + Pillow</td>
+                    <td>精简数据编码，确保手机可扫描</td>
+                </tr>
+                <tr>
+                    <td style="font-weight:600;">部署</td>
+                    <td>gunicorn + nginx</td>
+                    <td>生产级 WSGI 服务器 + 反向代理</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

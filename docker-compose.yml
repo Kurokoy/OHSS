@@ -1,0 +1,24 @@
+services:
+  ohss-calculator:
+    build: .
+    image: ohss-calculator:latest
+    container_name: ohss-calculator
+    ports:
+      - "5000:5000"
+    volumes:
+      - ohss-data:/data
+    restart: unless-stopped
+    init: true
+    environment:
+      - DB_PATH=/data/ohss.db
+      - FLASK_DEBUG=0
+      - GUNICORN_WORKERS=2
+      - GUNICORN_TIMEOUT=120
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  ohss-data:

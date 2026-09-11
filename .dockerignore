@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+*.pyo
+.claude
+docs
+screenshots
+cloud-deployment-proposal.html
+start.bat
+*.db
+.env
+.git
